@@ -12,51 +12,22 @@
   const COLS = 12;
   const ROWS = 6;
 
-  const css = `
-    :host { display:block; width:min(100%, 344px); color:#252525; font:14px/1.4 Arial,Helvetica,sans-serif; }
-    * { box-sizing:border-box; }
-    .panel { width:100%; padding:15px 16px; border:1px solid #d9d9d9; border-radius:4px; background:#fff; box-shadow:0 1px 3px #0000000d; }
-    .status { display:flex; align-items:center; gap:13px; min-height:42px; }
-    .indicator { position:relative; width:22px; height:22px; flex:0 0 22px; border:2px solid #e1e1e1; border-top-color:#555; border-radius:50%; animation:spin .8s linear infinite; transition:border-color 240ms ease,transform 280ms cubic-bezier(.2,.8,.2,1); }
-    .indicator:after { content:""; position:absolute; left:6px; top:2px; width:6px; height:10px; border:solid #26834a; border-width:0 2px 2px 0; opacity:0; transform:translateY(-2px) rotate(45deg) scale(.35); transition:opacity 150ms ease,transform 280ms cubic-bezier(.18,.75,.25,1.25); }
-    .panel.done .indicator { border-color:#26834a; animation:none; transform:scale(1.04); }
-    .panel.done .indicator:after { opacity:1; transform:translateY(0) rotate(45deg) scale(1); transition-delay:90ms; }
-    .panel.failed .indicator { border-color:#bb4848; animation:none; }
-    .panel.failed .indicator:after { content:"×"; left:1px; top:-5px; width:auto; height:auto; border:0; color:#bb4848; font-size:22px; opacity:1; transform:none; }
-    .copy { min-width:0; }
-    .heading { margin:0; font-size:14px; line-height:1.35; font-weight:600; }
-    .detail { margin:3px 0 0; color:#777; font-size:12px; }
-    .challenge { display:none; margin-top:15px; }
-    .panel.challenge-on .challenge { display:block; }
-    .instruction { margin:0 0 9px; color:#555; font-size:12px; }
-    .grid { position:relative; height:174px; overflow:hidden; border:1px solid #ddd; background:#fcfcfc; background-image:linear-gradient(to right,#ededed 1px,transparent 1px),linear-gradient(to bottom,#ededed 1px,transparent 1px); background-size:calc(100% / 12) calc(100% / 6); cursor:crosshair; touch-action:none; user-select:none; outline:none; }
-    .grid:focus-visible { outline:2px solid #8ba99a; outline-offset:3px; }
-    .grid.bad { border-color:#bd7777; }
-    .trace { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-    .trace polyline { fill:none; stroke:#718d7d; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.78; }
-    .dot { position:absolute; z-index:1; display:grid; place-items:center; transform:translate(-50%,-50%); pointer-events:none; }
-    .start { width:25px; height:25px; border:2px solid #444; border-radius:50%; background:#fff; color:#333; font-size:10px; font-weight:700; }
-    .target { width:23px; height:23px; border:2px solid #333; border-radius:50%; background:#333; color:#fff; font-size:10px; font-weight:700; transition:background 140ms ease,border-color 140ms ease,transform 140ms ease; }
-    .target.current { border-color:#47765a; background:#47765a; transform:translate(-50%,-50%) scale(1.13); }
-    .target.visited { border-color:#8ba99a; background:#8ba99a; }
-    .decoy { width:7px; height:7px; border-radius:50%; background:#bdbdbd; }
-    .key-cursor { position:absolute; z-index:2; display:none; width:9px; height:9px; border:2px solid #fff; border-radius:50%; background:#222; box-shadow:0 0 0 1px #222; transform:translate(-50%,-50%); pointer-events:none; }
-    .help { min-height:17px; margin:8px 0 0; color:#777; font-size:11px; }
-    .retry { display:none; margin-top:10px; padding:7px 12px; border:1px solid #ccc; border-radius:3px; background:#fff; color:#333; font:inherit; font-size:12px; cursor:pointer; }
-    .retry:hover { background:#f6f6f6; }
-    .panel.failed .retry { display:inline-block; }
-    .panel.done .challenge { display:none; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    @media(prefers-reduced-motion:reduce) { .indicator { animation-duration:2s; transition-duration:1ms; } .indicator:after,.target { transition-duration:1ms; transition-delay:0ms; } }
-  `;
-
   const markup = `
     <main class="panel" role="status" aria-live="polite">
-      <div class="status"><span class="indicator" aria-hidden="true"></span><div class="copy"><p class="heading">Checking your browser</p><p class="detail">AEGIS is checking this request.</p></div></div>
+      <div class="status">
+        <span class="indicator" aria-hidden="true"></span>
+        <div class="copy">
+          <p class="heading">Checking your browser</p>
+          <p class="detail">AEGIS is checking this request.</p>
+        </div>
+      </div>
       <section class="challenge" aria-label="Additional verification">
         <p class="instruction">Move from S through dots 1, 2 and 3 in order.</p>
-        <div class="grid" tabindex="0" role="application" aria-label="Verification grid. Start at S, then move through dots 1, 2 and 3 in order. Use arrow keys to move the cursor.">
-          <svg class="trace" aria-hidden="true"><polyline points=""></polyline></svg>
+        <div class="grid" tabindex="0" role="application"
+          aria-label="Verification grid. Start at S, then move through dots 1, 2 and 3 in order. Use arrow keys to move the cursor.">
+          <svg class="trace" aria-hidden="true">
+            <polyline points=""></polyline>
+          </svg>
           <span class="key-cursor" aria-hidden="true"></span>
         </div>
         <p class="help">Follow the points in order. Keep your movement inside the grid. Keyboard users can use the arrow keys.</p>
@@ -67,10 +38,13 @@
   function recentLoads() {
     const now = Date.now();
     let loads = [];
+
     try {
       loads = JSON.parse(sessionStorage.getItem(LOAD_KEY) || "[]");
       if (!Array.isArray(loads)) loads = [];
-    } catch (_) { loads = []; }
+    } catch (_) {
+      loads = [];
+    }
 
     loads = loads.filter((stamp) =>
       Number.isFinite(stamp) &&
@@ -83,7 +57,7 @@
     try {
       sessionStorage.setItem(LOAD_KEY, JSON.stringify(loads));
     } catch (_) {
-      /* storage can be blocked */
+      /* Storage can be blocked. */
     }
 
     return loads.length;
@@ -97,12 +71,33 @@
     host.dataset.aegisMounted = "true";
 
     const root = host.shadowRoot || host.attachShadow({ mode: "open" });
-    root.innerHTML = `<style>${css}</style>${markup}`;
+
+    const stylesheet = document.createElement("link");
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = CSS_URL;
+    stylesheet.crossOrigin = "anonymous";
+
+    const stylesheetReady = new Promise((resolve) => {
+      stylesheet.addEventListener("load", () => resolve(true), {
+        once: true
+      });
+
+      stylesheet.addEventListener("error", () => resolve(false), {
+        once: true
+      });
+    });
+
+    const template = document.createElement("template");
+    template.innerHTML = markup;
+
+    root.replaceChildren(
+      stylesheet,
+      template.content.cloneNode(true)
+    );
 
     const panel = root.querySelector(".panel");
     const heading = root.querySelector(".heading");
     const detail = root.querySelector(".detail");
-    const challenge = root.querySelector(".challenge");
     const grid = root.querySelector(".grid");
     const trace = root.querySelector("polyline");
     const keyCursor = root.querySelector(".key-cursor");
@@ -166,7 +161,9 @@
     }
 
     function fail(message) {
-      if (!active || terminal || panel.classList.contains("failed")) return;
+      if (!active || terminal || panel.classList.contains("failed")) {
+        return;
+      }
 
       clearTimeout(challengeTimer);
 
@@ -176,7 +173,8 @@
       heading.textContent = "Verification failed";
       detail.textContent = message;
 
-      help.textContent = "Try again and follow each point in order. Keep your movement inside the grid.";
+      help.textContent =
+        "Try again and follow each point in order. Keep your movement inside the grid.";
 
       host.dataset.aegisStatus = "failed";
 
@@ -211,9 +209,13 @@
       const cells = shuffledCells();
 
       return cells.find((cell) =>
-        selected.every((point) => distance(cell, point) >= minDistance)
+        selected.every((point) =>
+          distance(cell, point) >= minDistance
+        )
       ) || cells.find((cell) =>
-        selected.every((point) => distance(cell, point) >= 1.5)
+        selected.every((point) =>
+          distance(cell, point) >= 1.5
+        )
       );
     }
 
@@ -238,18 +240,28 @@
       return {
         col: Math.max(
           0,
-          Math.min(COLS - 1, Math.floor(x / bounds.width * COLS))
+          Math.min(
+            COLS - 1,
+            Math.floor(x / bounds.width * COLS)
+          )
         ),
+
         row: Math.max(
           0,
-          Math.min(ROWS - 1, Math.floor(y / bounds.height * ROWS))
+          Math.min(
+            ROWS - 1,
+            Math.floor(y / bounds.height * ROWS)
+          )
         )
       };
     }
 
     function atTarget(point, x, y, bounds) {
-      const px = (point.cell.col + 0.5) / COLS * bounds.width;
-      const py = (point.cell.row + 0.5) / ROWS * bounds.height;
+      const px =
+        (point.cell.col + 0.5) / COLS * bounds.width;
+
+      const py =
+        (point.cell.row + 0.5) / ROWS * bounds.height;
 
       return Math.hypot(x - px, y - py) <= 16;
     }
@@ -267,25 +279,37 @@
       state.samples = 0;
       state.length = 0;
       state.speeds = [];
-      state.cells = new Set([cell.col + ":" + cell.row]);
+      state.cells = new Set([
+        cell.col + ":" + cell.row
+      ]);
       state.path = [{ x, y }];
 
       drawPath();
 
       heading.textContent = "Follow the dots";
-      detail.textContent = "Keep moving through the numbered points.";
+      detail.textContent =
+        "Keep moving through the numbered points.";
+
       help.textContent = "Good. Now move to dot 1.";
     }
 
     function drawPath() {
       trace.setAttribute(
         "points",
-        state.path.map((point) => point.x + "," + point.y).join(" ")
+        state.path.map((point) =>
+          point.x + "," + point.y
+        ).join(" ")
       );
     }
 
     function processPosition(clientX, clientY, time) {
-      if (!active || terminal || panel.classList.contains("failed")) return;
+      if (
+        !active ||
+        terminal ||
+        panel.classList.contains("failed")
+      ) {
+        return;
+      }
 
       const bounds = grid.getBoundingClientRect();
 
@@ -313,14 +337,19 @@
       }
 
       const elapsed = Math.max(1, time - state.lastTime);
-      const step = Math.hypot(x - state.lastX, y - state.lastY);
+      const step = Math.hypot(
+        x - state.lastX,
+        y - state.lastY
+      );
 
       if (step < 1) return;
 
       const speed = step / elapsed;
 
       if ((step > 84 && elapsed < 180) || speed > 4.5) {
-        fail("That movement jumped across the grid too quickly. Try again.");
+        fail(
+          "That movement jumped across the grid too quickly. Try again."
+        );
         return;
       }
 
@@ -351,7 +380,9 @@
         index += 1
       ) {
         if (atTarget(state.targets[index], x, y, bounds)) {
-          fail("The points were not followed in order. Try again.");
+          fail(
+            "The points were not followed in order. Try again."
+          );
           return;
         }
       }
@@ -366,12 +397,15 @@
 
       const speedVariance =
         state.speeds.reduce(
-          (sum, value) => sum + Math.pow(value - meanSpeed, 2),
+          (sum, value) =>
+            sum + Math.pow(value - meanSpeed, 2),
           0
         ) / Math.max(1, state.speeds.length);
 
       const speedVariation =
-        meanSpeed > 0 ? Math.sqrt(speedVariance) / meanSpeed : 0;
+        meanSpeed > 0
+          ? Math.sqrt(speedVariance) / meanSpeed
+          : 0;
 
       const targetX =
         (current.cell.col + 0.5) / COLS * bounds.width;
@@ -382,29 +416,40 @@
       const vectorX = targetX - state.originX;
       const vectorY = targetY - state.originY;
 
-      const vectorLengthSquared =
-        Math.max(1, vectorX * vectorX + vectorY * vectorY);
+      const vectorLengthSquared = Math.max(
+        1,
+        vectorX * vectorX + vectorY * vectorY
+      );
 
-      const lineDeviation = state.path.reduce((maximum, point) => {
-        const position = Math.max(
-          0,
-          Math.min(
-            1,
-            (
-              (point.x - state.originX) * vectorX +
-              (point.y - state.originY) * vectorY
-            ) / vectorLengthSquared
-          )
-        );
+      const lineDeviation = state.path.reduce(
+        (maximum, point) => {
+          const position = Math.max(
+            0,
+            Math.min(
+              1,
+              (
+                (point.x - state.originX) * vectorX +
+                (point.y - state.originY) * vectorY
+              ) / vectorLengthSquared
+            )
+          );
 
-        const projectedX = state.originX + position * vectorX;
-        const projectedY = state.originY + position * vectorY;
+          const projectedX =
+            state.originX + position * vectorX;
 
-        return Math.max(
-          maximum,
-          Math.hypot(point.x - projectedX, point.y - projectedY)
-        );
-      }, 0);
+          const projectedY =
+            state.originY + position * vectorY;
+
+          return Math.max(
+            maximum,
+            Math.hypot(
+              point.x - projectedX,
+              point.y - projectedY
+            )
+          );
+        },
+        0
+      );
 
       if (
         state.samples < 8 ||
@@ -412,7 +457,9 @@
         state.length < 38 ||
         state.cells.size < 2
       ) {
-        fail("That movement was too abrupt to verify. Try again with a continuous movement.");
+        fail(
+          "That movement was too abrupt to verify. Try again with a continuous movement."
+        );
         return;
       }
 
@@ -421,7 +468,9 @@
         lineDeviation < 4.5 &&
         speedVariation < 0.35
       ) {
-        fail("The movement pattern was unusually straight and uniform. Try again.");
+        fail(
+          "The movement pattern was unusually straight and uniform. Try again."
+        );
         return;
       }
 
@@ -448,7 +497,9 @@
       state.samples = 0;
       state.length = 0;
       state.speeds = [];
-      state.cells = new Set([cell.col + ":" + cell.row]);
+      state.cells = new Set([
+        cell.col + ":" + cell.row
+      ]);
 
       help.textContent =
         "Dot " + state.targetIndex +
@@ -646,12 +697,18 @@
 
       keyPosition.x = Math.max(
         2,
-        Math.min(bounds.width - 2, keyPosition.x + delta[0])
+        Math.min(
+          bounds.width - 2,
+          keyPosition.x + delta[0]
+        )
       );
 
       keyPosition.y = Math.max(
         2,
-        Math.min(bounds.height - 2, keyPosition.y + delta[1])
+        Math.min(
+          bounds.height - 2,
+          keyPosition.y + delta[1]
+        )
       );
 
       keyCursor.style.display = "block";
@@ -689,7 +746,8 @@
     document.addEventListener("pointermove", (event) => {
       if (
         !event.isTrusted ||
-        (event.pointerType !== "mouse" && event.pointerType !== "pen")
+        (event.pointerType !== "mouse" &&
+         event.pointerType !== "pen")
       ) {
         return;
       }
@@ -704,32 +762,67 @@
     );
 
     grid.addEventListener("keydown", onKeyboard);
-
     retry.addEventListener("click", resetChallenge);
 
     const elevated =
       signals.webdriver ||
       reloads >= RELOAD_LIMIT;
 
-    if (elevated) {
-      decisionTimer = setTimeout(
-        () => makeChallenge("We need an additional check for this request."),
-        700
-      );
-    } else {
-      decisionTimer = setTimeout(() => {
-        if (signals.pointerMoved) {
-          pass("low", "browser-interaction");
-        } else {
-          makeChallenge(
-            "No cursor movement was detected, so this request needs another check."
-          );
-        }
-      }, DECISION_DELAY);
-    }
+    stylesheetReady.then((loaded) => {
+      if (terminal) return;
+
+      if (!loaded) {
+        terminal = true;
+
+        heading.textContent = "Verification unavailable";
+        detail.textContent =
+          "AEGIS could not load its stylesheet. Refresh and try again.";
+
+        host.dataset.aegisStatus = "error";
+
+        emit("failed", {
+          reason: "stylesheet-load-failed",
+          version: VERSION
+        });
+
+        return;
+      }
+
+      if (elevated) {
+        decisionTimer = setTimeout(
+          () => makeChallenge(
+            "We need an additional check for this request."
+          ),
+          700
+        );
+      } else {
+        decisionTimer = setTimeout(() => {
+          if (signals.pointerMoved) {
+            pass("low", "browser-interaction");
+          } else {
+            makeChallenge(
+              "No cursor movement was detected, so this request needs another check."
+            );
+          }
+        }, DECISION_DELAY);
+      }
+    });
   }
 
   const script = document.currentScript;
+
+  const cssHint = document.querySelector(
+    "link[data-aegis-stylesheet]"
+  );
+
+  const CSS_URL = cssHint && cssHint.href
+    ? cssHint.href
+    : new URL(
+        "./aegis.css",
+        script && script.src
+          ? script.src
+          : document.baseURI
+      ).href;
 
   function start() {
     let hosts = Array.from(
@@ -746,9 +839,13 @@
         script.parentNode &&
         script.parentNode !== document.head
       ) {
-        script.parentNode.insertBefore(host, script.nextSibling);
+        script.parentNode.insertBefore(
+          host,
+          script.nextSibling
+        );
       } else {
-        (document.body || document.documentElement).appendChild(host);
+        (document.body || document.documentElement)
+          .appendChild(host);
       }
 
       hosts = [host];
