@@ -1,0 +1,334 @@
+:host {
+  display: block;
+  width: min(100%, 360px);
+  color: #252b27;
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.panel {
+  width: 100%;
+  padding: 17px;
+  border: 1px solid #d9ded9;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(25, 35, 28, 0.045);
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 44px;
+}
+
+.indicator {
+  position: relative;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
+  border: 2px solid #e1e5e1;
+  border-top-color: #59655d;
+  border-radius: 50%;
+  animation: aegis-spin 0.8s linear infinite;
+  transition: border-color 220ms ease, transform 260ms ease;
+}
+
+.indicator:after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid #347b50;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: translateY(-2px) rotate(45deg) scale(0.35);
+  transition: opacity 150ms ease, transform 260ms cubic-bezier(0.18, 0.75, 0.25, 1.2);
+}
+
+.panel.done .indicator {
+  border-color: #347b50;
+  animation: none;
+  transform: scale(1.04);
+}
+
+.panel.done .indicator:after {
+  opacity: 1;
+  transform: translateY(0) rotate(45deg) scale(1);
+  transition-delay: 80ms;
+}
+
+.panel.failed .indicator {
+  border-color: #b94d4d;
+  animation: none;
+}
+
+.panel.failed .indicator:after {
+  content: "×";
+  left: 1px;
+  top: -5px;
+  width: auto;
+  height: auto;
+  border: 0;
+  color: #b94d4d;
+  font-size: 23px;
+  opacity: 1;
+  transform: none;
+}
+
+.copy {
+  min-width: 0;
+}
+
+.heading {
+  margin: 0;
+  color: #242a26;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.detail {
+  margin: 3px 0 0;
+  color: #727a74;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.challenge {
+  display: none;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #edf0ed;
+}
+
+.panel.challenge-on .challenge {
+  display: block;
+  animation: aegis-reveal 180ms ease-out both;
+}
+
+.instruction {
+  margin: 0 0 10px;
+  color: #454e48;
+  font-size: 12px;
+  font-weight: 550;
+}
+
+.grid {
+  position: relative;
+  height: 190px;
+  overflow: hidden;
+  border: 1px solid #dce2dc;
+  border-radius: 6px;
+  background-color: #fbfcfa;
+  background-image:
+    linear-gradient(to right, rgba(104, 123, 109, 0.13) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(104, 123, 109, 0.13) 1px, transparent 1px);
+  background-size: calc(100% / 12) calc(100% / 6);
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.grid:focus-visible {
+  outline: 2px solid #71927b;
+  outline-offset: 3px;
+}
+
+.grid.bad {
+  border-color: #c77a7a;
+  background-color: #fffafa;
+  animation: aegis-shake 260ms ease-in-out;
+}
+
+.trace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.trace polyline {
+  fill: none;
+  stroke: #64856d;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.9;
+  vector-effect: non-scaling-stroke;
+}
+
+.dot {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: aegis-dot-in 180ms ease-out both;
+}
+
+.start {
+  width: 27px;
+  height: 27px;
+  border: 2px solid #34463a;
+  border-radius: 50%;
+  background: #fff;
+  color: #34463a;
+  box-shadow: 0 1px 3px rgba(25, 35, 28, 0.12);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.target {
+  width: 25px;
+  height: 25px;
+  border: 1px solid #4d5d51;
+  border-radius: 50%;
+  background: #526b58;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(25, 35, 28, 0.14);
+  font-size: 10px;
+  font-weight: 700;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+.target.current {
+  border-color: #2e7046;
+  background: #2e7046;
+  box-shadow: 0 0 0 4px rgba(66, 129, 82, 0.15), 0 1px 4px rgba(25, 35, 28, 0.16);
+  transform: translate(-50%, -50%) scale(1.12);
+  animation: aegis-target-pulse 1.6s ease-in-out infinite;
+}
+
+.target.visited {
+  border-color: #9ab6a0;
+  background: #9ab6a0;
+  color: #fff;
+  box-shadow: none;
+  animation: none;
+}
+
+.decoy {
+  width: 7px;
+  height: 7px;
+  border: 1px solid #aeb8b0;
+  border-radius: 50%;
+  background: #cbd2cc;
+  box-shadow: 0 0 0 3px rgba(190, 200, 192, 0.12);
+}
+
+.key-cursor {
+  position: absolute;
+  z-index: 2;
+  display: none;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #25372a;
+  box-shadow: 0 0 0 1px #25372a, 0 1px 4px rgba(0, 0, 0, 0.2);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.help {
+  min-height: 18px;
+  margin: 9px 0 0;
+  color: #737c75;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.retry {
+  display: none;
+  margin-top: 11px;
+  padding: 7px 12px;
+  border: 1px solid #cbd4cc;
+  border-radius: 4px;
+  background: #fff;
+  color: #34463a;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.retry:hover {
+  border-color: #9eafa1;
+  background: #f6f8f6;
+}
+
+.retry:focus-visible {
+  outline: 2px solid #71927b;
+  outline-offset: 2px;
+}
+
+.panel.failed .retry {
+  display: inline-block;
+}
+
+.panel.done .challenge {
+  display: none;
+}
+
+@keyframes aegis-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes aegis-reveal {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes aegis-dot-in {
+  from { opacity: 0; scale: 0.75; }
+  to { opacity: 1; scale: 1; }
+}
+
+@keyframes aegis-target-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(66, 129, 82, 0.12), 0 1px 4px rgba(25, 35, 28, 0.16); }
+  50% { box-shadow: 0 0 0 7px rgba(66, 129, 82, 0.06), 0 1px 4px rgba(25, 35, 28, 0.16); }
+}
+
+@keyframes aegis-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+@media (max-width: 360px) {
+  .panel { padding: 14px; }
+  .grid { height: 174px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator,
+  .target.current,
+  .panel.challenge-on .challenge,
+  .dot,
+  .grid.bad {
+    animation: none;
+  }
+
+  .indicator,
+  .indicator:after,
+  .target,
+  .grid,
+  .retry {
+    transition-duration: 1ms;
+    transition-delay: 0ms;
+  }
+}
